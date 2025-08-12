@@ -31,80 +31,85 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class VoiceTriggerService extends Service {
 
-    private static final String TAG = "VoiceTrigger";
+    private static final String TAG = "VoiceTriggerService";
     private SpeechRecognizer speechRecognizer;
     private Intent recognizerIntent;
 
     private static final int NOTIFICATION_ID = 1;
     private static final String CHANNEL_ID = "voice_trigger_channel";
 
-    private final String emergencyNumber = "1234567890"; // ✅ Replace with actual number
-    private final String smsNumber = "1234567890";       // ✅ Replace with actual number
+    private final String emergencyNumber = "1234567890"; // replace with actual emergency number
 
     private PowerManager.WakeLock wakeLock;
-    private int helpCount = 0;
-
     private FusedLocationProviderClient fusedLocationClient;
+
+    // Preference keys (same keys as toggles in MainActivity)
+    private static final String PREFS_NAME = "SafetyAppPrefs";
+    private static final String KEY_AUTO_CALL = "auto_call";
+    private static final String KEY_SEND_SMS = "send_sms";
+    private static final String KEY_USE_SPEAKER = "use_speaker";
 
     @Override
     public void onCreate() {
         super.onCreate();
+
         createNotificationChannel();
         startForeground(NOTIFICATION_ID, buildNotification());
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        // ✅ Keep CPU awake
+        // Keep CPU awake while listening
         PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
         wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "SafetyApp::VoiceWakeLock");
         wakeLock.acquire();
 
+        setupSpeechRecognizer();
+
+        startListening();
+    }
+
+    private void setupSpeechRecognizer() {
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
         speechRecognizer.setRecognitionListener(new RecognitionListener() {
-            @Override public void onReadyForSpeech(Bundle params) { Log.d(TAG, "Ready for speech"); }
-            @Override public void onBeginningOfSpeech() {}
-            @Override public void onRmsChanged(float rmsdB) {}
-            @Override public void onBufferReceived(byte[] buffer) {}
-            @Override public void onEndOfSpeech() {}
-
+            @Override public void onReadyForSpeech(Bundle params) {
+                Log.d(TAG, "Ready for speech");
+            }
+            @Override public void onBeginningOfSpeech() { }
+            @Override public void onRmsChanged(float rmsdB) { }
+            @Override public void onBufferReceived(byte[] buffer) { }
+            @Override public void onEndOfSpeech() { }
             @Override
             public void onError(int error) {
-                Log.e(TAG, "Speech error: " + error);
-                new Handler(Looper.getMainLooper()).postDelayed(() -> restartListening(), 500);
+                Log.e(TAG, "SpeechRecognizer error: " + error);
+                new Handler(Looper.getMainLooper()).postDelayed(VoiceTriggerService.this::restartListening, 500);
             }
-
             @Override
             public void onResults(Bundle results) {
                 ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
                 if (matches != null) {
                     for (String result : matches) {
-                        Log.d(TAG, "Recognized: " + result);
-                        if (result.toLowerCase().contains("help")) {
-                            helpCount++;
-                            if (helpCount >= 1) {
-                                triggerEmergencyAction();
-                                helpCount = 0;
-                                break;
-                            }
+                        Log.d(TAG, "Recognized phrase: " + result);
+                        if (result.toLowerCase(Locale.ROOT).contains("help")) {
+                            Log.d(TAG, "Help detected!");
+                            triggerEmergencyAction();
+                            break;
                         }
                     }
                 }
                 restartListening();
             }
-
-            @Override public void onPartialResults(Bundle partialResults) {}
-            @Override public void onEvent(int eventType, Bundle params) {}
+            @Override public void onPartialResults(Bundle partialResults) { }
+            @Override public void onEvent(int eventType, Bundle params) { }
         });
 
         recognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
                 RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-        recognizerIntent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, this.getPackageName());
-
-        startListening();
+        recognizerIntent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, getPackageName());
     }
 
     private void startListening() {
@@ -121,10 +126,16 @@ public class VoiceTriggerService extends Service {
     }
 
     private void triggerEmergencyAction() {
-        Log.d(TAG, "🚨 HELP DETECTED! Checking user settings...");
+        Log.d(TAG, "Triggering emergency actions...");
+
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        boolean autoCall = prefs.getBoolean(KEY_AUTO_CALL, true);
+        boolean sendSms = prefs.getBoolean(KEY_SEND_SMS, true);
+        boolean useSpeaker = prefs.getBoolean(KEY_USE_SPEAKER, false);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            sendEmergencyActions("Location not available");
+            // No location permission, send actions without location
+            sendEmergencyActions("Location not available", autoCall, sendSms, useSpeaker);
             return;
         }
 
@@ -132,54 +143,49 @@ public class VoiceTriggerService extends Service {
             String locMsg = (location != null)
                     ? "Lat: " + location.getLatitude() + ", Lon: " + location.getLongitude()
                     : "Location not available";
-            sendEmergencyActions(locMsg);
+            sendEmergencyActions(locMsg, autoCall, sendSms, useSpeaker);
         });
     }
 
-    private void sendEmergencyActions(String locationMsg) {
-        // ✅ Load user preferences
-        SharedPreferences prefs = getSharedPreferences(SettingsActivity.PREFS, MODE_PRIVATE);
-        boolean autoCall = prefs.getBoolean(SettingsActivity.KEY_AUTO_CALL, true);
-        boolean useSpeaker = prefs.getBoolean(SettingsActivity.KEY_SPEAKER, false);
-        boolean sendSms = prefs.getBoolean(SettingsActivity.KEY_SMS, true);
+    private void sendEmergencyActions(String locationMsg, boolean autoCall, boolean sendSms, boolean useSpeaker) {
+        Log.d(TAG, "Settings -> autoCall: " + autoCall + ", sendSms: " + sendSms + ", useSpeaker: " + useSpeaker);
 
-        Log.d(TAG, "Settings -> AutoCall: " + autoCall + ", Speaker: " + useSpeaker + ", SMS: " + sendSms);
-
-        // ✅ 1️⃣ Make call if enabled
+        // 1️⃣ Make call if enabled and permission granted
         if (autoCall && ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED) {
             try {
                 TelecomManager telecomManager = (TelecomManager) getSystemService(TELECOM_SERVICE);
                 if (telecomManager != null) {
-                    Log.d(TAG, "📞 Placing emergency call to " + emergencyNumber);
+                    Log.d(TAG, "📞 Calling emergency number: " + emergencyNumber);
                     telecomManager.placeCall(Uri.fromParts("tel", emergencyNumber, null), null);
                 }
             } catch (Exception e) {
-                Log.e(TAG, "❌ Error making call: " + e.getMessage());
+                Log.e(TAG, "Error making emergency call: " + e.getMessage());
             }
         } else {
-            Log.d(TAG, "📞 AutoCall disabled or permission missing");
+            Log.d(TAG, "Auto-call disabled or CALL_PHONE permission missing");
         }
 
-        // ✅ 2️⃣ Send SMS if enabled
+        // 2️⃣ Send SMS if enabled and permission granted
         if (sendSms && ActivityCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) == PackageManager.PERMISSION_GRANTED) {
             String smsBody = "🚨 HELP! I need assistance. My location: " + locationMsg;
             SmsManager smsManager = SmsManager.getDefault();
-            smsManager.sendTextMessage(smsNumber, null, smsBody, null, null);
-            Log.d(TAG, "📩 SMS sent with location");
+            smsManager.sendTextMessage(emergencyNumber, null, smsBody, null, null);
+            Log.d(TAG, "SMS sent to emergency contact");
         } else {
-            Log.d(TAG, "📩 SMS disabled or permission missing");
+            Log.d(TAG, "Send SMS disabled or SEND_SMS permission missing");
         }
 
-        // ✅ 3️⃣ Handle speaker mode
+        // 3️⃣ Handle speaker mode if enabled
         if (useSpeaker) {
-            Log.d(TAG, "🔊 Speaker mode ON (you can integrate with CallActivity if needed)");
+            Log.d(TAG, "Speaker mode enabled (implement as needed)");
+            // Add speaker mode logic if required (e.g., enable speakerphone during call)
         }
     }
 
     private Notification buildNotification() {
         return new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("SafetyApp Active")
-                .setContentText("Listening for 'HELP' even when locked")
+                .setContentText("Listening for 'help' keyword")
                 .setSmallIcon(android.R.drawable.ic_btn_speak_now)
                 .setOngoing(true)
                 .build();
