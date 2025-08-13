@@ -5,7 +5,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.Toast;
 
@@ -21,6 +25,10 @@ public class MainActivity extends AppCompatActivity {
     private Switch switchAutoCall, switchSendSms, switchSpeaker;
     private Button startButton;
 
+    // New inputs and checkboxes for numbers
+    private EditText inputNumber1, inputNumber2, inputNumber3;
+    private CheckBox checkNumber1, checkNumber2, checkNumber3;
+
     private boolean isListening = false;
     private Intent voiceServiceIntent;
 
@@ -35,15 +43,33 @@ public class MainActivity extends AppCompatActivity {
         switchSpeaker = findViewById(R.id.switchSpeaker);
         startButton = findViewById(R.id.startButton);
 
+        inputNumber1 = findViewById(R.id.inputNumber1);
+        inputNumber2 = findViewById(R.id.inputNumber2);
+        inputNumber3 = findViewById(R.id.inputNumber3);
+
+        checkNumber1 = findViewById(R.id.checkNumber1);
+        checkNumber2 = findViewById(R.id.checkNumber2);
+        checkNumber3 = findViewById(R.id.checkNumber3);
+
         voiceServiceIntent = new Intent(this, VoiceTriggerService.class);
 
-        // Load saved switch states
+        // Load saved switch states and numbers
         loadPreferences();
 
         // Listen for switch toggle changes and save immediately
         switchAutoCall.setOnCheckedChangeListener((buttonView, isChecked) -> savePreference("auto_call", isChecked));
         switchSendSms.setOnCheckedChangeListener((buttonView, isChecked) -> savePreference("send_sms", isChecked));
         switchSpeaker.setOnCheckedChangeListener((buttonView, isChecked) -> savePreference("use_speaker", isChecked));
+
+        // Save number input changes
+        setupEditTextWatcher(inputNumber1, "number1");
+        setupEditTextWatcher(inputNumber2, "number2");
+        setupEditTextWatcher(inputNumber3, "number3");
+
+        // Save checkbox changes
+        checkNumber1.setOnCheckedChangeListener((buttonView, isChecked) -> savePreference("number1_enabled", isChecked));
+        checkNumber2.setOnCheckedChangeListener((buttonView, isChecked) -> savePreference("number2_enabled", isChecked));
+        checkNumber3.setOnCheckedChangeListener((buttonView, isChecked) -> savePreference("number3_enabled", isChecked));
 
         // Start/Stop Voice Detection button
         startButton.setOnClickListener(v -> {
@@ -71,11 +97,34 @@ public class MainActivity extends AppCompatActivity {
         switchAutoCall.setChecked(prefs.getBoolean("auto_call", true));
         switchSendSms.setChecked(prefs.getBoolean("send_sms", true));
         switchSpeaker.setChecked(prefs.getBoolean("use_speaker", false));
+
+        inputNumber1.setText(prefs.getString("number1", ""));
+        inputNumber2.setText(prefs.getString("number2", ""));
+        inputNumber3.setText(prefs.getString("number3", ""));
+
+        checkNumber1.setChecked(prefs.getBoolean("number1_enabled", false));
+        checkNumber2.setChecked(prefs.getBoolean("number2_enabled", false));
+        checkNumber3.setChecked(prefs.getBoolean("number3_enabled", false));
     }
 
     private void savePreference(String key, boolean value) {
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         prefs.edit().putBoolean(key, value).apply();
+    }
+
+    private void savePreference(String key, String value) {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        prefs.edit().putString(key, value).apply();
+    }
+
+    private void setupEditTextWatcher(EditText editText, String prefKey) {
+        editText.addTextChangedListener(new android.text.TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                savePreference(prefKey, s.toString().trim());
+            }
+            @Override public void afterTextChanged(Editable s) { }
+        });
     }
 
     private boolean checkAndRequestPermissions() {

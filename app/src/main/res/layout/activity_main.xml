@@ -8,6 +8,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
+        <!-- Original switches -->
         <Switch
             android:id="@+id/switchAutoCall"
             android:layout_width="wrap_content"
@@ -31,6 +32,92 @@
             android:text="Enable Speaker Mode"
             android:textSize="18sp"
             android:layout_marginBottom="24dp" />
+
+        <!-- New phone number inputs with checkboxes -->
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp">
+
+            <EditText
+                android:id="@+id/inputNumber1"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:inputType="phone"
+                android:hint="Enter phone number 1"
+                android:textSize="18sp"
+                android:padding="8dp"
+                android:maxLength="15"
+                android:importantForAutofill="yes" />
+
+            <CheckBox
+                android:id="@+id/checkNumber1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Use"
+                android:textSize="16sp"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp">
+
+            <EditText
+                android:id="@+id/inputNumber2"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:inputType="phone"
+                android:hint="Enter phone number 2"
+                android:textSize="18sp"
+                android:padding="8dp"
+                android:maxLength="15"
+                android:importantForAutofill="yes" />
+
+            <CheckBox
+                android:id="@+id/checkNumber2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Use"
+                android:textSize="16sp"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="24dp">
+
+            <EditText
+                android:id="@+id/inputNumber3"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:inputType="phone"
+                android:hint="Enter phone number 3"
+                android:textSize="18sp"
+                android:padding="8dp"
+                android:maxLength="15"
+                android:importantForAutofill="yes" />
+
+            <CheckBox
+                android:id="@+id/checkNumber3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Use"
+                android:textSize="16sp"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
 
         <Button
             android:id="@+id/startButton"
