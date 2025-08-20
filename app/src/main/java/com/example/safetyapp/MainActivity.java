@@ -6,7 +6,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.Editable;
-import android.text.TextWatcher;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -25,7 +24,6 @@ public class MainActivity extends AppCompatActivity {
     private Switch switchAutoCall, switchSendSms, switchSpeaker;
     private Button startButton;
 
-    // New inputs and checkboxes for numbers
     private EditText inputNumber1, inputNumber2, inputNumber3;
     private CheckBox checkNumber1, checkNumber2, checkNumber3;
 
@@ -53,35 +51,29 @@ public class MainActivity extends AppCompatActivity {
 
         voiceServiceIntent = new Intent(this, VoiceTriggerService.class);
 
-        // Load saved switch states and numbers
+        // Load saved preferences
         loadPreferences();
 
-        // Listen for switch toggle changes and save immediately
+        // Switch listeners
         switchAutoCall.setOnCheckedChangeListener((buttonView, isChecked) -> savePreference("auto_call", isChecked));
         switchSendSms.setOnCheckedChangeListener((buttonView, isChecked) -> savePreference("send_sms", isChecked));
         switchSpeaker.setOnCheckedChangeListener((buttonView, isChecked) -> savePreference("use_speaker", isChecked));
 
-        // Save number input changes
+        // EditText watchers
         setupEditTextWatcher(inputNumber1, "number1");
         setupEditTextWatcher(inputNumber2, "number2");
         setupEditTextWatcher(inputNumber3, "number3");
 
-        // Save checkbox changes
+        // CheckBox listeners
         checkNumber1.setOnCheckedChangeListener((buttonView, isChecked) -> savePreference("number1_enabled", isChecked));
         checkNumber2.setOnCheckedChangeListener((buttonView, isChecked) -> savePreference("number2_enabled", isChecked));
         checkNumber3.setOnCheckedChangeListener((buttonView, isChecked) -> savePreference("number3_enabled", isChecked));
 
-        // Start/Stop Voice Detection button
+        // Start/Stop Voice Detection
         startButton.setOnClickListener(v -> {
             if (!isListening) {
                 if (checkAndRequestPermissions()) {
-                    voiceServiceIntent.putExtra("auto_call", switchAutoCall.isChecked());
-                    voiceServiceIntent.putExtra("send_sms", switchSendSms.isChecked());
-                    voiceServiceIntent.putExtra("use_speaker", switchSpeaker.isChecked());
-                    ContextCompat.startForegroundService(this, voiceServiceIntent);
-                    Toast.makeText(MainActivity.this, "Voice Detection Started", Toast.LENGTH_SHORT).show();
-                    isListening = true;
-                    startButton.setText("Stop Voice Detection");
+                    startVoiceService();
                 }
             } else {
                 stopService(voiceServiceIntent);
@@ -134,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
                 Manifest.permission.SEND_SMS,
                 Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.FOREGROUND_SERVICE_MICROPHONE  // Added for Android 34+
+                Manifest.permission.FOREGROUND_SERVICE_MICROPHONE
         };
 
         boolean allGranted = true;
@@ -151,10 +143,19 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    private void startVoiceService() {
+        voiceServiceIntent.putExtra("auto_call", switchAutoCall.isChecked());
+        voiceServiceIntent.putExtra("send_sms", switchSendSms.isChecked());
+        voiceServiceIntent.putExtra("use_speaker", switchSpeaker.isChecked());
+        ContextCompat.startForegroundService(this, voiceServiceIntent);
+        Toast.makeText(this, "Voice Detection Started", Toast.LENGTH_SHORT).show();
+        isListening = true;
+        startButton.setText("Stop Voice Detection");
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
         if (requestCode == PERMISSION_REQUEST_CODE) {
             boolean grantedAll = true;
             for (int result : grantResults) {
@@ -164,13 +165,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
             if (grantedAll && !isListening) {
-                voiceServiceIntent.putExtra("auto_call", switchAutoCall.isChecked());
-                voiceServiceIntent.putExtra("send_sms", switchSendSms.isChecked());
-                voiceServiceIntent.putExtra("use_speaker", switchSpeaker.isChecked());
-                ContextCompat.startForegroundService(this, voiceServiceIntent);
-                Toast.makeText(this, "Voice Detection Started", Toast.LENGTH_SHORT).show();
-                isListening = true;
-                startButton.setText("Stop Voice Detection");
+                startVoiceService();
             } else if (!grantedAll) {
                 Toast.makeText(this, "Permissions denied. Voice detection won't start.", Toast.LENGTH_LONG).show();
             }
