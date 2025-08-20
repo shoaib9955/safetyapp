@@ -12,6 +12,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
 
     <application
         android:allowBackup="true"
@@ -39,7 +41,9 @@
         <!-- Google Maps API Key -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyA-YourActualAPIKeyHere" />
+            android:value="AIzaSyA_gPCTs5L9TyzMrMHcWwxYKdbl7W3e0z4" />
+        <activity android:name=".CrimeHeatmapActivity" android:exported="true"/>
+
 
     </application>
 

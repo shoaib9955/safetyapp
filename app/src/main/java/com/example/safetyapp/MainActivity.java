@@ -48,6 +48,12 @@ public class MainActivity extends AppCompatActivity {
         checkNumber1 = findViewById(R.id.checkNumber1);
         checkNumber2 = findViewById(R.id.checkNumber2);
         checkNumber3 = findViewById(R.id.checkNumber3);
+        Button btnHeatmap = findViewById(R.id.btnHeatmap);
+        btnHeatmap.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, CrimeHeatmapActivity.class);
+            startActivity(intent);
+        });
+
 
         voiceServiceIntent = new Intent(this, VoiceTriggerService.class);
 
@@ -82,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
                 startButton.setText("Start Voice Detection");
             }
         });
+
     }
 
     private void loadPreferences() {

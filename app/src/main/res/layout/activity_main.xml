@@ -126,6 +126,14 @@
             android:text="Start Voice Detection"
             android:textSize="18sp"
             android:padding="16dp" />
+        <Button
+            android:id="@+id/btnHeatmap"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="View Crime Heatmap"
+            android:textSize="18sp"
+            android:layout_marginTop="16dp"/>
+
 
     </LinearLayout>
 </ScrollView>
