@@ -10,10 +10,9 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-
 
     <application
         android:allowBackup="true"
@@ -31,6 +30,11 @@
             </intent-filter>
         </activity>
 
+        <!-- Crime heatmap activity -->
+        <activity
+            android:name=".CrimeHeatmapActivity"
+            android:exported="true"/>
+
         <!-- Voice trigger foreground service -->
         <service
             android:name=".VoiceTriggerService"
@@ -38,13 +42,27 @@
             android:exported="false"
             android:foregroundServiceType="microphone" />
 
+        <!-- Location foreground service -->
+        <service
+            android:name=".LocationService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="location" />
+
+        <!-- Boot receiver to start both services on device reboot -->
+        <receiver
+            android:name=".BootReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+        </receiver>
+
         <!-- Google Maps API Key -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyA_gPCTs5L9TyzMrMHcWwxYKdbl7W3e0z4" />
-        <activity android:name=".CrimeHeatmapActivity" android:exported="true"/>
-
 
     </application>
-
 </manifest>

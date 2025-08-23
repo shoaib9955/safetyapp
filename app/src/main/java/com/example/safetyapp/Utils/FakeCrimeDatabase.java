@@ -19,36 +19,28 @@ public class FakeCrimeDatabase {
     }
 
     /**
-     * Generate clustered crime points for distinct zones
-     * @param center Center of the map
-     * @param radiusMeters Maximum distance from center
+     * Generate mixed crime zones near the user
+     * @param center Center location
+     * @param radiusMeters Max radius
+     * @param totalZones Number of zones
      */
-    public static List<CrimePoint> generateCrimePoints(LatLng center, double radiusMeters) {
+    public static List<CrimePoint> generateCrimePoints(LatLng center, double radiusMeters, int totalZones) {
         List<CrimePoint> points = new ArrayList<>();
         Random random = new Random();
 
-        // Define clusters: low, medium, high
-        double[][] clusterOffsets = {
-                {0.0, 0.0},      // low cluster near center
-                {0.15, 0.15},    // medium cluster offset NE
-                {-0.15, -0.15}   // high cluster offset SW
-        };
+        double[] intensities = {0.2, 0.5, 1.0}; // green, yellow, red
 
-        double[] intensities = {0.2, 0.5, 1.0};
-        int pointsPerZone = 70; // ~210 points total
+        for (int i = 0; i < totalZones; i++) {
+            double angle = random.nextDouble() * 2 * Math.PI;
+            double distance = random.nextDouble() * radiusMeters;
+            double dx = distance * Math.cos(angle) / 111000f;
+            double dy = distance * Math.sin(angle) / (111000f * Math.cos(Math.toRadians(center.latitude)));
 
-        for (int zone = 0; zone < 3; zone++) {
-            for (int i = 0; i < pointsPerZone; i++) {
-                double angle = random.nextDouble() * 2 * Math.PI;
-                double distance = random.nextDouble() * radiusMeters / 3; // each cluster smaller radius
-                double dx = distance * Math.cos(angle) / 111000f;
-                double dy = distance * Math.sin(angle) / (111000f * Math.cos(Math.toRadians(center.latitude)));
+            double newLat = center.latitude + dy;
+            double newLng = center.longitude + dx;
 
-                double newLat = center.latitude + dy + clusterOffsets[zone][0];
-                double newLng = center.longitude + dx + clusterOffsets[zone][1];
-
-                points.add(new CrimePoint(new LatLng(newLat, newLng), intensities[zone]));
-            }
+            double intensity = intensities[random.nextInt(intensities.length)];
+            points.add(new CrimePoint(new LatLng(newLat, newLng), intensity));
         }
 
         return points;
