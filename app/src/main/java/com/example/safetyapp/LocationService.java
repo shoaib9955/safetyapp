@@ -36,11 +36,9 @@ public class LocationService extends Service {
         zoneNotifier = new ZoneNotifier(this);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        // Load saved zones
         String savedZonesJson = getSharedPreferences("safetyAppPrefs", MODE_PRIVATE)
                 .getString("fixedZones", null);
         if (savedZonesJson != null) {
-            zones.clear();
             zones.addAll(CrimeHeatmapActivity.CrimePoint.fromJsonArray(savedZonesJson));
         }
 

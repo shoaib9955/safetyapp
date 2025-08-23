@@ -7,6 +7,7 @@ import android.location.Location;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -52,7 +53,7 @@ public class CrimeHeatmapActivity extends AppCompatActivity implements OnMapRead
     private TileOverlay heatmapOverlay;
     private final List<Circle> zoneCircles = new ArrayList<>();
 
-    private Button btnToggleMap, btnToggleSatellite, btnSetNumber;
+    private Button btnToggleMap, btnToggleSatellite, btnSetNumber, btnSmsToggle, btnVoiceToggle;
     private TextView tvEmergencyNumber;
     private boolean showingHeatmap = false;
     private boolean satelliteMode = false;
@@ -66,6 +67,9 @@ public class CrimeHeatmapActivity extends AppCompatActivity implements OnMapRead
     private static final int REQUEST_LOCATION_PERMISSION = 100;
     private static final int REQUEST_SMS_PERMISSION = 101;
 
+    private Button btnToggleDropdown;
+    private LinearLayout dropdownContainer;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,21 +77,38 @@ public class CrimeHeatmapActivity extends AppCompatActivity implements OnMapRead
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
+        // Controls
         btnToggleMap = findViewById(R.id.btnToggleMap);
         btnToggleSatellite = findViewById(R.id.btnToggleSatellite);
         btnSetNumber = findViewById(R.id.btnSetNumber);
+        btnSmsToggle = findViewById(R.id.btnToggleSMS);
+        btnVoiceToggle = findViewById(R.id.btnToggleVoice);
+
         tvEmergencyNumber = findViewById(R.id.tvEmergencyNumber);
+        btnToggleDropdown = findViewById(R.id.btnToggleDropdown);
+        dropdownContainer = findViewById(R.id.dropdownContainer);
 
         updateEmergencyNumberUI();
+        updateToggleButtonUI();
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.mapFragment);
         mapFragment.getMapAsync(this);
 
+        btnToggleDropdown.setOnClickListener(v -> {
+            if (dropdownContainer.getVisibility() == LinearLayout.GONE) {
+                dropdownContainer.setVisibility(LinearLayout.VISIBLE);
+                btnToggleDropdown.setText("Hide Controls ▲");
+            } else {
+                dropdownContainer.setVisibility(LinearLayout.GONE);
+                btnToggleDropdown.setText("Show Controls ▼");
+            }
+        });
+
         btnToggleMap.setOnClickListener(v -> {
             showingHeatmap = !showingHeatmap;
             if (showingHeatmap) showHeatmap();
-            else showZones();
+            else showZonesFast();
         });
 
         btnToggleSatellite.setOnClickListener(v -> {
@@ -98,18 +119,46 @@ public class CrimeHeatmapActivity extends AppCompatActivity implements OnMapRead
 
         btnSetNumber.setOnClickListener(v -> promptEmergencyNumber());
 
+        btnSmsToggle.setOnClickListener(v -> toggleButtonPreference("smsEnabled", btnSmsToggle, "SMS"));
+        btnVoiceToggle.setOnClickListener(v -> toggleButtonPreference("voiceEnabled", btnVoiceToggle, "Voice"));
+
         zoneNotifier = new ZoneNotifier(this);
 
         setupLocationUpdates();
         requestSmsPermission();
 
-        // Start background location service to send SMS even if app closed
         Intent serviceIntent = new Intent(this, LocationService.class);
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             startForegroundService(serviceIntent);
         } else {
             startService(serviceIntent);
         }
+    }
+
+    private void updateToggleButtonUI() {
+        boolean smsEnabled = getPref("smsEnabled", true);
+        boolean voiceEnabled = getPref("voiceEnabled", true);
+
+        btnSmsToggle.setText("SMS: " + (smsEnabled ? "ON" : "OFF"));
+        btnVoiceToggle.setText("Voice: " + (voiceEnabled ? "ON" : "OFF"));
+    }
+
+    private void toggleButtonPreference(String key, Button button, String name) {
+        boolean enabled = getPref(key, true);
+        enabled = !enabled;
+        setPref(key, enabled);
+        button.setText(name + ": " + (enabled ? "ON" : "OFF"));
+        Toast.makeText(this, name + " " + (enabled ? "enabled" : "disabled"), Toast.LENGTH_SHORT).show();
+    }
+
+    private boolean getPref(String key, boolean defaultVal) {
+        return getSharedPreferences("safetyAppPrefs", MODE_PRIVATE)
+                .getBoolean(key, defaultVal);
+    }
+
+    private void setPref(String key, boolean value) {
+        getSharedPreferences("safetyAppPrefs", MODE_PRIVATE)
+                .edit().putBoolean(key, value).apply();
     }
 
     private void updateEmergencyNumberUI() {
@@ -153,7 +202,6 @@ public class CrimeHeatmapActivity extends AppCompatActivity implements OnMapRead
                             .width(5)
                             .color(0xFF0000FF));
 
-                    // Pre-entry SMS handled by LocationService; optional for live map
                     zoneNotifier.checkZoneEntry(currentLatLng, fakePoints);
                 }
             }
@@ -190,60 +238,83 @@ public class CrimeHeatmapActivity extends AppCompatActivity implements OnMapRead
             return;
         }
 
-        fusedLocationClient.getLastLocation().addOnSuccessListener(this, location -> {
-            if (location != null) {
-                LatLng userLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+        fusedLocationClient.getCurrentLocation(LocationRequest.PRIORITY_HIGH_ACCURACY, null)
+                .addOnSuccessListener(this, this::onLocationReady);
+    }
 
-                String savedZonesJson = getSharedPreferences("safetyAppPrefs", MODE_PRIVATE)
-                        .getString("fixedZones", null);
+    private void onLocationReady(Location location) {
+        if (location == null) return;
 
-                if (savedZonesJson != null) {
-                    fakePoints.clear();
-                    fakePoints.addAll(CrimePoint.fromJsonArray(savedZonesJson));
-                } else {
-                    fakePoints.clear();
-                    fakePoints.addAll(generateFakePoints(userLatLng, 15000, 46));
-                    getSharedPreferences("safetyAppPrefs", MODE_PRIVATE).edit()
-                            .putString("fixedZones", CrimePoint.toJsonArray(fakePoints))
-                            .apply();
-                }
+        LatLng userLatLng = new LatLng(location.getLatitude(), location.getLongitude());
 
-                showZones();
-                startLocationUpdates();
-            }
-        });
+        fakePoints.clear();
+        double radiusMeters = 10000;
+        int totalPoints = 50;
+
+        fakePoints.addAll(generateFakePoints(userLatLng, radiusMeters, totalPoints));
+
+        getSharedPreferences("safetyAppPrefs", MODE_PRIVATE).edit()
+                .putString("fixedZones", CrimePoint.toJsonArray(fakePoints))
+                .apply();
+
+        showZonesFast();
+        startLocationUpdates();
     }
 
     private List<CrimePoint> generateFakePoints(LatLng center, double radiusM, int totalPoints) {
         List<CrimePoint> points = new ArrayList<>();
         Random random = new Random();
         double[] intensities = {0.2, 0.5, 1.0};
+        double minGap = 300;
 
         for (int i = 0; i < totalPoints; i++) {
-            double angle = random.nextDouble() * 2 * Math.PI;
-            double distance = random.nextDouble() * radiusM;
-            double dx = distance * Math.cos(angle) / 111000f;
-            double dy = distance * Math.sin(angle) / (111000f * Math.cos(Math.toRadians(center.latitude)));
+            boolean validPoint = false;
+            LatLng newPoint = null;
 
-            double lat = center.latitude + dy;
-            double lng = center.longitude + dx;
+            while (!validPoint) {
+                double angle = random.nextDouble() * 2 * Math.PI;
+                double distance = random.nextDouble() * radiusM;
+                double dx = distance * Math.cos(angle) / 111000f;
+                double dy = distance * Math.sin(angle) / (111000f * Math.cos(Math.toRadians(center.latitude)));
+
+                double lat = center.latitude + dy;
+                double lng = center.longitude + dx;
+                newPoint = new LatLng(lat, lng);
+
+                validPoint = true;
+                for (CrimePoint p : points) {
+                    float[] result = new float[1];
+                    android.location.Location.distanceBetween(p.location.latitude, p.location.longitude,
+                            lat, lng, result);
+                    if (result[0] < minGap) {
+                        validPoint = false;
+                        break;
+                    }
+                }
+            }
+
             double intensity = intensities[i % 3];
-            points.add(new CrimePoint(new LatLng(lat, lng), intensity));
+            points.add(new CrimePoint(newPoint, intensity));
         }
         return points;
     }
 
-    private void showZones() {
+    private void showZonesFast() {
         if (heatmapOverlay != null) { heatmapOverlay.remove(); heatmapOverlay = null; }
         for (Circle c : zoneCircles) c.remove();
         zoneCircles.clear();
 
-        for (CrimePoint p : fakePoints) drawCircle(p.location, p.intensity);
+        new Thread(() -> {
+            for (CrimePoint p : fakePoints) {
+                runOnUiThread(() -> drawCircle(p.location, p.intensity));
+                try { Thread.sleep(5); } catch (Exception ignored) {}
+            }
+        }).start();
     }
 
     private void drawCircle(LatLng location, double intensity) {
         int fill, stroke;
-        float radius = 300f;
+        float radius = 150f;
         float strokeWidth = 2f;
 
         if (intensity < 0.3) { fill = 0x5500FF00; stroke = 0xFF00FF00; }
@@ -309,6 +380,7 @@ public class CrimeHeatmapActivity extends AppCompatActivity implements OnMapRead
     static class CrimePoint {
         LatLng location;
         double intensity;
+
         CrimePoint(LatLng location, double intensity) {
             this.location = location;
             this.intensity = intensity;
