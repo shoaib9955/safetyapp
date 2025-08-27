@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "789760258839",
+    "project_id": "ecoshield-dbc0e",
+    "storage_bucket": "ecoshield-dbc0e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:789760258839:android:573163980a671d067bbd52",
+        "android_client_info": {
+          "package_name": "com.example.safetyapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA1lX7dC0X03nhFHmgfNN_N4-Ny2CpBr4M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,139 +1,195 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="24dp">
+    android:background="#F4F6FA"
+    android:padding="16dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Original switches -->
-        <Switch
-            android:id="@+id/switchAutoCall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Enable Auto Call"
-            android:textSize="18sp"
-            android:layout_marginBottom="16dp" />
-
-        <Switch
-            android:id="@+id/switchSendSms"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Enable Send SMS"
-            android:textSize="18sp"
-            android:layout_marginBottom="16dp" />
-
-        <Switch
-            android:id="@+id/switchSpeaker"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Enable Speaker Mode"
-            android:textSize="18sp"
-            android:layout_marginBottom="24dp" />
-
-        <!-- New phone number inputs with checkboxes -->
-
-        <LinearLayout
+        <!-- Switches Section -->
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="16dp">
+            android:layout_marginBottom="20dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="6dp"
+            android:backgroundTint="#FFFFFF"
+            android:padding="16dp">
 
-            <EditText
-                android:id="@+id/inputNumber1"
-                android:layout_width="0dp"
-                android:layout_weight="1"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="phone"
-                android:hint="Enter phone number 1"
-                android:textSize="18sp"
-                android:padding="8dp"
-                android:maxLength="15"
-                android:importantForAutofill="yes" />
+                android:orientation="vertical">
 
-            <CheckBox
-                android:id="@+id/checkNumber1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Use"
-                android:textSize="16sp"
-                android:layout_marginStart="8dp" />
-        </LinearLayout>
+                <Switch
+                    android:id="@+id/switchAutoCall"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Enable Auto Call"
+                    android:textColor="#1E88E5"
+                    android:textSize="18sp"
+                    android:layout_marginBottom="12dp" />
 
-        <LinearLayout
+                <Switch
+                    android:id="@+id/switchSendSms"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Enable Send SMS"
+                    android:textColor="#43A047"
+                    android:textSize="18sp"
+                    android:layout_marginBottom="12dp" />
+
+                <Switch
+                    android:id="@+id/switchSpeaker"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Enable Speaker Mode"
+                    android:textColor="#FB8C00"
+                    android:textSize="18sp" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Phone Numbers Section -->
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="16dp">
+            android:layout_marginBottom="20dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="6dp"
+            android:backgroundTint="#FFFFFF"
+            android:padding="16dp">
 
-            <EditText
-                android:id="@+id/inputNumber2"
-                android:layout_width="0dp"
-                android:layout_weight="1"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="phone"
-                android:hint="Enter phone number 2"
-                android:textSize="18sp"
-                android:padding="8dp"
-                android:maxLength="15"
-                android:importantForAutofill="yes" />
+                android:orientation="vertical">
 
-            <CheckBox
-                android:id="@+id/checkNumber2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Use"
-                android:textSize="16sp"
-                android:layout_marginStart="8dp" />
-        </LinearLayout>
+                <!-- Number 1 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="12dp">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="24dp">
+                    <EditText
+                        android:id="@+id/inputNumber1"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:inputType="phone"
+                        android:hint="Enter phone number 1"
+                        android:backgroundTint="#1E88E5"
+                        android:textSize="16sp"
+                        android:padding="8dp"
+                        android:maxLength="15" />
 
-            <EditText
-                android:id="@+id/inputNumber3"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:inputType="phone"
-                android:hint="Enter phone number 3"
-                android:textSize="18sp"
-                android:padding="8dp"
-                android:maxLength="15"
-                android:importantForAutofill="yes" />
+                    <CheckBox
+                        android:id="@+id/checkNumber1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Use"
+                        android:textColor="#1E88E5"
+                        android:textSize="16sp"
+                        android:layout_marginStart="8dp" />
+                </LinearLayout>
 
-            <CheckBox
-                android:id="@+id/checkNumber3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Use"
-                android:textSize="16sp"
-                android:layout_marginStart="8dp" />
-        </LinearLayout>
+                <!-- Number 2 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="12dp">
 
+                    <EditText
+                        android:id="@+id/inputNumber2"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:inputType="phone"
+                        android:hint="Enter phone number 2"
+                        android:backgroundTint="#43A047"
+                        android:textSize="16sp"
+                        android:padding="8dp"
+                        android:maxLength="15" />
+
+                    <CheckBox
+                        android:id="@+id/checkNumber2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Use"
+                        android:textColor="#43A047"
+                        android:textSize="16sp"
+                        android:layout_marginStart="8dp" />
+                </LinearLayout>
+
+                <!-- Number 3 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <EditText
+                        android:id="@+id/inputNumber3"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:inputType="phone"
+                        android:hint="Enter phone number 3"
+                        android:backgroundTint="#FB8C00"
+                        android:textSize="16sp"
+                        android:padding="8dp"
+                        android:maxLength="15" />
+
+                    <CheckBox
+                        android:id="@+id/checkNumber3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Use"
+                        android:textColor="#FB8C00"
+                        android:textSize="16sp"
+                        android:layout_marginStart="8dp" />
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Buttons Section -->
         <Button
             android:id="@+id/startButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:backgroundTint="#1E88E5"
             android:text="Start Voice Detection"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
             android:textSize="18sp"
-            android:padding="16dp" />
+            android:padding="14dp"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/rounded_button" />
+
         <Button
             android:id="@+id/btnHeatmap"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:backgroundTint="#E53935"
             android:text="View Crime Heatmap"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
             android:textSize="18sp"
+            android:padding="14dp"
+            android:background="@drawable/rounded_button" />
+        <Button
+            android:id="@+id/btnLogout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Logout"
             android:layout_marginTop="16dp"/>
-
 
     </LinearLayout>
 </ScrollView>

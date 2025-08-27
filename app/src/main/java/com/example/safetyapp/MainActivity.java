@@ -16,13 +16,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
 public class MainActivity extends AppCompatActivity {
 
     private static final String PREFS_NAME = "SafetyAppPrefs";
     private static final int PERMISSION_REQUEST_CODE = 100;
 
     private Switch switchAutoCall, switchSendSms, switchSpeaker;
-    private Button startButton;
+    private Button startButton, btnLogout; // ✅ Added logout button
 
     private EditText inputNumber1, inputNumber2, inputNumber3;
     private CheckBox checkNumber1, checkNumber2, checkNumber3;
@@ -30,9 +33,22 @@ public class MainActivity extends AppCompatActivity {
     private boolean isListening = false;
     private Intent voiceServiceIntent;
 
+    private FirebaseAuth mAuth; // ✅ FirebaseAuth instance
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // ✅ Firebase login check before loading UI
+        mAuth = FirebaseAuth.getInstance();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser == null) {
+            // If not logged in → go to LoginActivity
+            startActivity(new Intent(MainActivity.this, LoginActivity.class));
+            finish();
+            return;
+        }
+
         setContentView(R.layout.activity_main);
 
         // Init views
@@ -40,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
         switchSendSms = findViewById(R.id.switchSendSms);
         switchSpeaker = findViewById(R.id.switchSpeaker);
         startButton = findViewById(R.id.startButton);
+        btnLogout = findViewById(R.id.btnLogout); // ✅ New logout button
 
         inputNumber1 = findViewById(R.id.inputNumber1);
         inputNumber2 = findViewById(R.id.inputNumber2);
@@ -48,12 +65,12 @@ public class MainActivity extends AppCompatActivity {
         checkNumber1 = findViewById(R.id.checkNumber1);
         checkNumber2 = findViewById(R.id.checkNumber2);
         checkNumber3 = findViewById(R.id.checkNumber3);
+
         Button btnHeatmap = findViewById(R.id.btnHeatmap);
         btnHeatmap.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, CrimeHeatmapActivity.class);
             startActivity(intent);
         });
-
 
         voiceServiceIntent = new Intent(this, VoiceTriggerService.class);
 
@@ -89,6 +106,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // ✅ Logout button functionality
+        btnLogout.setOnClickListener(v -> {
+            mAuth.signOut();
+            Toast.makeText(MainActivity.this, "Logged out", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(MainActivity.this, LoginActivity.class));
+            finish();
+        });
     }
 
     private void loadPreferences() {

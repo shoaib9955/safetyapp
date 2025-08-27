@@ -1,4 +1,5 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_crime_heatmap"
     android:layout_width="match_parent"
@@ -12,114 +13,132 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- Top controls container -->
-    <LinearLayout
-        android:id="@+id/topControls"
+    <!-- Top controls container inside CardView -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/topControlsCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="12dp"
-        android:background="#CCFFFFFF"
-        android:elevation="4dp">
+        android:layout_alignParentTop="true"
+        android:layout_margin="12dp"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="8dp"
+        android:backgroundTint="#E6FFFFFF"
+        android:padding="12dp">
 
-        <!-- Emergency number display (always visible) -->
-        <TextView
-            android:id="@+id/tvEmergencyNumber"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="SMS will be sent to: Not set"
-            android:textSize="16sp"
-            android:textColor="#000000"
-            android:padding="8dp"
-            android:background="@drawable/rounded_bg"
-            android:gravity="center_vertical|start"/>
-
-        <!-- Dropdown button -->
-        <Button
-            android:id="@+id/btnToggleDropdown"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Show Controls ▼"
-            android:layout_gravity="center_horizontal"
-            android:background="@drawable/rounded_button"
-            android:padding="8dp"
-            android:layout_marginTop="8dp"/>
-
-        <!-- Dropdown content (initially hidden) -->
         <LinearLayout
-            android:id="@+id/dropdownContainer"
+            android:id="@+id/topControls"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone"
-            android:paddingTop="8dp">
+            android:orientation="vertical">
 
-            <!-- Map & satellite buttons -->
-            <LinearLayout
+            <!-- Emergency number display -->
+            <TextView
+                android:id="@+id/tvEmergencyNumber"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:weightSum="2"
-                android:gravity="center"
-                android:layout_marginBottom="6dp">
+                android:text="SMS will be sent to: Not set"
+                android:textSize="16sp"
+                android:textColor="#1E1E1E"
+                android:padding="10dp"
+                android:background="@drawable/rounded_bg"
+                android:elevation="2dp"
+                android:gravity="center_vertical|start"/>
 
-                <Button
-                    android:id="@+id/btnToggleMap"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:text="Toggle Zones"
-                    android:background="@drawable/rounded_button"
-                    android:padding="8dp"/>
+            <!-- Dropdown button -->
+            <Button
+                android:id="@+id/btnToggleDropdown"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Show Controls ▼"
+                android:textSize="15sp"
+                android:textColor="#FFFFFF"
+                android:layout_gravity="center_horizontal"
+                android:background="@drawable/primary_button"
+                android:padding="10dp"
+                android:layout_marginTop="10dp"/>
 
-                <Button
-                    android:id="@+id/btnToggleSatellite"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:text="Satellite View"
-                    android:background="@drawable/rounded_button"
-                    android:padding="8dp"
-                    android:layout_marginStart="8dp"/>
-            </LinearLayout>
-
-            <!-- Set number / toggle buttons -->
+            <!-- Dropdown content (initially hidden) -->
             <LinearLayout
+                android:id="@+id/dropdownContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center"
-                android:weightSum="3">
+                android:orientation="vertical"
+                android:visibility="gone"
+                android:paddingTop="8dp"
+                android:layout_marginTop="6dp">
 
-                <Button
-                    android:id="@+id/btnSetNumber"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
+                <!-- Map & satellite buttons -->
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Set Number"
-                    android:background="@drawable/rounded_button"
-                    android:padding="8dp"/>
+                    android:orientation="horizontal"
+                    android:weightSum="2"
+                    android:gravity="center"
+                    android:layout_marginBottom="10dp">
 
-                <Button
-                    android:id="@+id/btnToggleSMS"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:text="SMS: ON"
-                    android:background="@drawable/rounded_button"
-                    android:padding="8dp"
-                    android:layout_marginStart="8dp"/>
+                    <Button
+                        android:id="@+id/btnToggleMap"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:text="Toggle Zones"
+                        android:textColor="#FFFFFF"
+                        android:background="@drawable/secondary_button"
+                        android:padding="10dp"/>
 
-                <Button
-                    android:id="@+id/btnToggleVoice"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
+                    <Button
+                        android:id="@+id/btnToggleSatellite"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:text="Satellite View"
+                        android:textColor="#FFFFFF"
+                        android:background="@drawable/secondary_button"
+                        android:padding="10dp"
+                        android:layout_marginStart="10dp"/>
+                </LinearLayout>
+
+                <!-- Set number / toggle buttons -->
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Voice: ON"
-                    android:background="@drawable/rounded_button"
-                    android:padding="8dp"
-                    android:layout_marginStart="8dp"/>
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:weightSum="3">
+
+                    <Button
+                        android:id="@+id/btnSetNumber"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:text="Set Number"
+                        android:textColor="#FFFFFF"
+                        android:background="@drawable/primary_button"
+                        android:padding="10dp"/>
+
+                    <Button
+                        android:id="@+id/btnToggleSMS"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:text="SMS: ON"
+                        android:textColor="#FFFFFF"
+                        android:background="@drawable/primary_button"
+                        android:padding="10dp"
+                        android:layout_marginStart="10dp"/>
+
+                    <Button
+                        android:id="@+id/btnToggleVoice"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:text="Voice: ON"
+                        android:textColor="#FFFFFF"
+                        android:background="@drawable/primary_button"
+                        android:padding="10dp"
+                        android:layout_marginStart="10dp"/>
+                </LinearLayout>
             </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
+    </androidx.cardview.widget.CardView>
 </RelativeLayout>
