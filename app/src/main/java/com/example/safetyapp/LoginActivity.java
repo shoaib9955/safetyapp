@@ -16,7 +16,6 @@ public class LoginActivity extends AppCompatActivity {
 
     private EditText inputEmail, inputPassword;
     private Button btnLogin, btnGoRegister;
-
     private FirebaseAuth mAuth;
 
     @Override
@@ -26,7 +25,7 @@ public class LoginActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
 
-        // If already logged in, skip login
+        // Skip login if already logged in
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
             startActivity(new Intent(LoginActivity.this, MainActivity.class));
@@ -34,32 +33,21 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        // Link UI components
         inputEmail = findViewById(R.id.inputEmail);
         inputPassword = findViewById(R.id.inputPassword);
         btnLogin = findViewById(R.id.btnLogin);
         btnGoRegister = findViewById(R.id.btnRegister);
 
-        // Button listeners
         btnLogin.setOnClickListener(v -> loginUser());
-        btnGoRegister.setOnClickListener(v -> {
-            startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
-        });
+        btnGoRegister.setOnClickListener(v -> startActivity(new Intent(LoginActivity.this, RegisterActivity.class)));
     }
 
     private void loginUser() {
         String email = inputEmail.getText().toString().trim();
         String password = inputPassword.getText().toString().trim();
 
-        // Input validation
-        if (TextUtils.isEmpty(email)) {
-            inputEmail.setError("Email is required");
-            return;
-        }
-        if (TextUtils.isEmpty(password)) {
-            inputPassword.setError("Password is required");
-            return;
-        }
+        if (TextUtils.isEmpty(email)) { inputEmail.setError("Email is required"); return; }
+        if (TextUtils.isEmpty(password)) { inputPassword.setError("Password is required"); return; }
 
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
@@ -68,9 +56,8 @@ public class LoginActivity extends AppCompatActivity {
                         startActivity(new Intent(LoginActivity.this, MainActivity.class));
                         finish();
                     } else {
-                        Toast.makeText(LoginActivity.this,
-                                "Login failed: " + task.getException().getMessage(),
-                                Toast.LENGTH_LONG).show();
+                        String error = task.getException() != null ? task.getException().getMessage() : "Unknown error";
+                        Toast.makeText(LoginActivity.this, "Login failed: " + error, Toast.LENGTH_LONG).show();
                     }
                 });
     }

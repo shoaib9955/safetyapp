@@ -1,9 +1,11 @@
-// File: app/src/main/java/com/example/safetyapp/UserModel.java
 package com.example.safetyapp;
 
 public class UserModel {
     private String name;
     private String email;
+
+    // Default constructor (required by Firebase)
+    public UserModel() {}
 
     // Constructor
     public UserModel(String name, String email) {
@@ -11,10 +13,7 @@ public class UserModel {
         this.email = email;
     }
 
-    // Empty constructor (required by Firebase)
-    public UserModel() {}
-
-    // Getters and Setters
+    // Getters and setters
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
